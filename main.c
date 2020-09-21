@@ -20,6 +20,8 @@
 
 #define BUF_SIZE 4096
 
+#define MAX_HTTP_HEADER_SIZE 16384
+
 #define TRUE 1
 #define FALSE 0
 
@@ -60,10 +62,12 @@ typedef struct UrlDataStruct {
 
 typedef struct ResponseStruct
 {
-  char *header;
+  char *raw_header;
+  char **header_list;
   char *body;
-  ssize_t header_size;
+  ssize_t raw_header_size;
   ssize_t body_size;
+  ssize_t header_list_size;
 } response_s;
 
 int set_http_response_data(const char *response_data, ssize_t size, response_s *result)
@@ -82,11 +86,19 @@ int set_http_response_data(const char *response_data, ssize_t size, response_s *
   ssize_t count = 0;
   int new_line_count = 0;
   char previous = 0;
+  // char **header_list = INIT_ARRAY(char*, 1);
+  char *tmp_header_list_contents = NULL;
+  ssize_t tmp_header_list_contents_size = 0;
+  // int header_list_count = 0;
   for(ssize_t i = 0; i < size; ++i) {
 
     if(previous == '\n' && response_data[i] != '\r') {
       new_line_count = 0;
       previous = 0;
+
+      /* if(tmp_header_list_contents != NULL) { */
+      /* } */
+      
     }
 
     if(previous == '\r') {
@@ -103,6 +115,11 @@ int set_http_response_data(const char *response_data, ssize_t size, response_s *
       previous = '\r';
     }
 
+    /* if(response_data[i] != '\r' && response_data[i] != '\n') { */
+    /*   tmp_header_list_contents[tmp_header_list_contents_size] = response_data[i]; */
+    /*   ++tmp_header_list_contents_size; */
+    /* } */
+
     header[i] = response_data[i];
     
     ++count;
@@ -110,6 +127,14 @@ int set_http_response_data(const char *response_data, ssize_t size, response_s *
     if(new_line_count == 2)
       break;
     
+  }
+
+  if(count > MAX_HTTP_HEADER_SIZE) {
+    FREE(header);
+
+    printf("Error: over max http header size. Limit size: %d bytes\n", MAX_HTTP_HEADER_SIZE);
+    
+    return -1;
   }
 
   if(count >= size) {
@@ -141,9 +166,9 @@ int set_http_response_data(const char *response_data, ssize_t size, response_s *
   result->body_size = body_pos;
   result->body = body;
 
-  result->header_size = count;
+  result->raw_header_size = count;
   // result->header_size = strlen(header);
-  result->header = header;
+  result->raw_header = header;
   
   return 1;
 }
@@ -359,19 +384,20 @@ int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char 
 
 
   response_s *response = INIT_ARRAY(response_s, sizeof(response_s));
-  set_http_response_data(result, strlen(result), response);
+
+  if(set_http_response_data(result, strlen(result), response)) {
+    printf("header size: %ld\nheader: %s\n\nbody size: %ld\nbody: %s\n",
+           response->raw_header_size,
+           response->raw_header,
+           response->body_size,
+           response->body);
+
+    FREE(response->raw_header);
+    FREE(response->body);
+  }
   
-  /* printf("\nresult data: %s\n", result); */
-  FREE(result);
+  FREE(result);  
 
-  printf("header size: %ld\nheader: %s\n\nbody size: %ld\nbody: %s\n",
-         response->header_size,
-         response->header,
-         response->body_size,
-         response->body);
-
-  FREE(response->header);
-  FREE(response->body);
   FREE(response);
 
 
