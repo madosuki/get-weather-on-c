@@ -15,6 +15,8 @@
 #include <openssl/err.h>
 #include <openssl/ssl3.h>
 
+#include <json-c/json.h>
+
 #define HTTP_PORT 80
 #define HTTPS_PORT 443
 
@@ -22,8 +24,8 @@
 
 #define MAX_HTTP_HEADER_SIZE 16384
 
-#define TRUE 1
-#define FALSE 0
+// #define TRUE 1
+// #define FALSE 0
 
 #define FREE(v) \
   do {          \
@@ -56,6 +58,9 @@ typedef struct UrlDataStruct {
   
   char *path_name;
   ssize_t path_name_size;
+
+  char *body;
+  ssize_t body_size;
   
   int protocol;
 } url_data_s;
@@ -266,7 +271,7 @@ void set_addr(socket_data_s *socket_data, const url_data_s *url_data)
   
 }
 
-int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char *header)
+int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char *data, response_s *response)
 {
 
   if(protocol == HTTP_PORT)
@@ -320,9 +325,9 @@ int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char 
   }
 
   if(!is_ssl)
-    err = write(socket_data->socket, header, strlen(header));
+    err = write(socket_data->socket, data, strlen(data));
   else
-    err = SSL_write(ssl, header, strlen(header));
+    err = SSL_write(ssl, data, strlen(data));
 
   struct timeval tv;
   tv.tv_sec = 10;
@@ -383,7 +388,7 @@ int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char 
   close(socket_data->socket);
 
 
-  response_s *response = INIT_ARRAY(response_s, sizeof(response_s));
+  // response_s *tmp_response = INIT_ARRAY(response_s, sizeof(response_s));
 
   if(set_http_response_data(result, strlen(result), response)) {
     printf("header size: %ld\nheader: %s\n\nbody size: %ld\nbody: %s\n",
@@ -392,19 +397,21 @@ int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char 
            response->body_size,
            response->body);
 
-    FREE(response->raw_header);
-    FREE(response->body);
+    // FREE(tmp_response->raw_header);
+    // FREE(tmp_response->body);
   }
   
   FREE(result);  
 
-  FREE(response);
+  // FREE(tmp_response);
+
+  // response = tmp_response;
 
 
   return 1;
 }
 
-int set_url_data(const char *url, int size, url_data_s *url_data)
+int set_url_data(const char *url, int size, Method method, url_data_s *url_data)
 {
 
   char check_protocol[7];
@@ -439,16 +446,42 @@ int set_url_data(const char *url, int size, url_data_s *url_data)
 
   ssize_t path_pos = 0;
   char *path = INIT_ARRAY(char, size);
+  /* int is_get_query = FALSE; */
+  /* ssize_t get_query_pos = 0; */
   for(ssize_t i = pos + init_value; i < size; ++i) {
+    /* if(url[i] == '?' && method == GET) { */
+    /*   is_get_query = TRUE; */
+    /*   get_query_pos = i + 1; */
+    /*   break; */
+    /* } */
+    
     path[path_pos] = url[i];
     ++path_pos;
   }
+
+  char *body = NULL;
+  int body_count = 0;
+  /* if(is_get_query) { */
+  /*   body = INIT_ARRAY(char, size); */
+
+  /*   for(ssize_t i = get_query_pos; i < size; ++i) { */
+  /*     body[body_count] = url[i]; */
+  /*     ++body_count; */
+  /*   } */
+    
+  /* } */
+
 
   url_data->hostname = hostname;
   url_data->hostname_size = (ssize_t)(pos + 1);
 
   url_data->path_name = path;
   url_data->path_name_size = (ssize_t)(path_pos + 1);
+
+  if(body != NULL) {
+    url_data->body = body;
+    url_data->body_size = body_count + 1;
+  }
   
   url_data->url = INIT_ARRAY(char, size);
   url_data->url_size = size;
@@ -498,7 +531,7 @@ char* create_header(url_data_s *url_data, Method method, HttpVersion version)
     (strlen(header_end_line) * 3) + 2;
 
   char *header = INIT_ARRAY(char, size);
-  sprintf(header, "%s %s/ %s\r\nHost: %s\r\n\r\n", method_string, url_data->path_name, http_version_string, url_data->hostname);
+  sprintf(header, "%s %s %s\r\nHost: %s\r\n\r\n", method_string, url_data->path_name, http_version_string, url_data->hostname);
 
   FREE(method_string);
   FREE(http_version_string);
@@ -506,17 +539,30 @@ char* create_header(url_data_s *url_data, Method method, HttpVersion version)
   return header;
 }
 
-int main(void)
+int main(int argc, const char **argv)
 {
-  const char *url = "https://madosuki.github.io";
+  if(argc < 2) {
+
+    printf("non argument. this program need one argument of url string\n");
+    
+    return -1;
+  }
+
+  const char *url = argv[1];
 
   url_data_s *url_data = (url_data_s*)malloc(sizeof(url_data_s));
-  int n = set_url_data(url, strlen(url), url_data);
+  int err = set_url_data(url, strlen(url), GET, url_data);
+  printf("hostname: %s\n", url_data->hostname);
+  printf("pathname: %s\n", url_data->path_name);
+  
+  if(url_data->body != NULL)
+    printf("body: %s\n", url_data->body);
 
-  if(n) {
+  if(err) {
     char *header = create_header(url_data, GET, HTTP_1_1);
 
-    if(n) {
+    if(header != NULL) {
+      printf("request header: %s\n", header);
 
       socket_data_s socket_data;
 
@@ -524,11 +570,18 @@ int main(void)
 
       set_addr(&socket_data, url_data);
 
-      do_connect(&socket_data, HTTPS_PORT, TRUE, header);
-      //  do_connect(&socket_data, HTTP_PORT, FALSE, header);
+      response_s response;
+      do_connect(&socket_data, HTTPS_PORT, TRUE, header, &response);
+
+      // struct json_object *json_from_string = json_tokener_parse(response.body);
+
+      FREE(response.raw_header);
+      FREE(response.body);
+
+      FREE(header);
     }
 
-    FREE(header);
+
 
     FREE(url_data->hostname);
     FREE(url_data->path_name);
