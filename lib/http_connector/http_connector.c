@@ -463,3 +463,83 @@ char* create_header(url_data_s *url_data, Method method, HttpVersion version)
 
   return header;
 }
+
+
+int get_http_response(const char *url, response_s *response)
+{
+
+  url_data_s *url_data = (url_data_s*)malloc(sizeof(url_data_s));
+  int err = set_url_data(url, strlen(url), GET, url_data);
+  printf("hostname: %s\n", url_data->hostname);
+  printf("pathname: %s\n", url_data->path_name);
+  
+  if(url_data->body != NULL)
+    printf("body: %s\n", url_data->body);
+
+  if(err) {
+    char *header = create_header(url_data, GET, HTTP_1_1);
+
+    if(header == NULL) {
+      printf("failed create_header\n");
+
+      FREE(url_data->hostname);
+      FREE(url_data->path_name);
+      FREE(url_data->url);
+
+      FREE(url_data);
+
+      return -1;
+    }
+
+    printf("request header: %s\n", header);
+
+    socket_data_s socket_data;
+
+    init_socket(&socket_data);
+
+    set_addr(&socket_data, url_data);
+
+    /* response_s *response = INIT_ARRAY(response_s, sizeof(response_s)); */
+    /* if(response == NULL) { */
+    /*   printf("failed malloc to response at do_connect\n"); */
+      
+    /*   FREE(header); */
+          
+    /*   FREE(url_data->hostname); */
+    /*   FREE(url_data->path_name); */
+    /*   FREE(url_data->url); */
+    /*   FREE(url_data); */
+
+    /*   return -1; */
+    /* } */
+
+    
+    err = do_connect(&socket_data, HTTPS_PORT, 1, header, response);
+    if(!err) {
+      printf("Error: do_conenct\n");
+
+      FREE(header);
+          
+      FREE(url_data->hostname);
+      FREE(url_data->path_name);
+      FREE(url_data->url);
+      FREE(url_data);
+
+      return -1;
+    }
+
+    /* memcpy(result, response, sizeof(response_s)); */
+    /* FREE(response); */
+
+
+    FREE(header);
+
+    FREE(url_data->hostname);
+    FREE(url_data->path_name);
+    FREE(url_data->url);
+  }
+
+  FREE(url_data);
+
+  return 1;
+}

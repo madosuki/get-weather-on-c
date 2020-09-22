@@ -89,4 +89,6 @@ int set_url_data(const char *url, int size, Method method, url_data_s *url_data)
 
 char* create_header(url_data_s *url_data, Method method, HttpVersion version);
 
+int get_http_response(const char *url, response_s *response);
+
 #endif
