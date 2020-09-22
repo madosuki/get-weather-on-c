@@ -19,8 +19,10 @@ int main(int argc, const char **argv)
 
   const char *url = argv[1];
 
+  const char *user_agent = "MyBot/1.0";
+
   response_s *response = INIT_ARRAY(response_s, sizeof(response_s));
-  int err = get_http_response(url, response);
+  int err = get_http_response(url, user_agent, response);
 
   if(!err) {
     printf("Error: failed get_http_response at main function\n");

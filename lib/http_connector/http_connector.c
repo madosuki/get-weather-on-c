@@ -433,7 +433,7 @@ int set_url_data(const char *url, int size, Method method, url_data_s *url_data)
   return 1;
 }
 
-char* create_header(url_data_s *url_data, Method method, HttpVersion version)
+char* create_header(url_data_s *url_data, const char *user_agent, Method method, HttpVersion version)
 {
 
   char *method_string = INIT_ARRAY(char, 4);
@@ -464,16 +464,23 @@ char* create_header(url_data_s *url_data, Method method, HttpVersion version)
 
   const char *host_prefix = "Host: ";
   const char *header_end_line = "\r\n";
+  const char *user_agent_prefix = "User-Agent: ";
 
   ssize_t size = strlen(method_string) +
     url_data->path_name_size +
     strlen(http_version_string) +
     strlen(host_prefix) +
     url_data->hostname_size +
-    (strlen(header_end_line) * 3) + 2;
+    (strlen(header_end_line) * 4) + 2;
 
+  if(user_agent != NULL)
+    size += strlen(user_agent) + strlen(user_agent_prefix);
+  
   char *header = INIT_ARRAY(char, size);
-  sprintf(header, "%s %s %s\r\nHost: %s\r\n\r\n", method_string, url_data->path_name, http_version_string, url_data->hostname);
+  if(user_agent != NULL)
+    sprintf(header, "%s %s %s\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n", method_string, url_data->path_name, http_version_string, url_data->hostname, user_agent);
+  else
+    sprintf(header, "%s %s %s\r\nHost: %s\r\n\r\n", method_string, url_data->path_name, http_version_string, url_data->hostname);
 
   FREE(method_string);
   FREE(http_version_string);
@@ -482,7 +489,7 @@ char* create_header(url_data_s *url_data, Method method, HttpVersion version)
 }
 
 
-int get_http_response(const char *url, response_s *response)
+int get_http_response(const char *url, const char *user_agent, response_s *response)
 {
 
   url_data_s *url_data = (url_data_s*)malloc(sizeof(url_data_s));
@@ -494,7 +501,7 @@ int get_http_response(const char *url, response_s *response)
     printf("body: %s\n", url_data->body);
 
   if(err) {
-    char *header = create_header(url_data, GET, HTTP_1_1);
+    char *header = create_header(url_data, user_agent, GET, HTTP_1_1);
 
     if(header == NULL) {
       printf("failed create_header\n");
