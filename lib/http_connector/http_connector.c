@@ -1,5 +1,8 @@
 #include "./http_connector.h"
 
+const int FALSE = 0;
+const int TRUE = 1;
+
 int set_http_response_data(const char *response_data, ssize_t size, response_s *result)
 {
   if(response_data == NULL) {
@@ -514,7 +517,7 @@ int get_http_response(const char *url, response_s *response)
     /* } */
 
     
-    err = do_connect(&socket_data, HTTPS_PORT, 1, header, response);
+    err = do_connect(&socket_data, HTTPS_PORT, TRUE, header, response);
     if(!err) {
       printf("Error: do_conenct\n");
 

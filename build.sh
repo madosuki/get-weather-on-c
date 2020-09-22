@@ -8,4 +8,4 @@ make
 cd ../../
 make
 
-echo "done! :) 🍺"
+echo "done! (^ω^)⊃🍺"
