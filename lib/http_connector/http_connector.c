@@ -358,19 +358,27 @@ int set_url_data(const char *url, int size, Method method, url_data_s *url_data)
     check_protocol[i] = url[i];
   }
 
-  int is_valid_protocol = -1;
+  int is_valid_protocol = FALSE;
+  int protocol = 0;
 
-  if(strcmp(check_protocol, "http://") == 0)
-    is_valid_protocol = HTTP_PORT;
-  else if(strcmp(check_protocol, "https:/") == 0)
-    is_valid_protocol = HTTPS_PORT;
-  else
+  if(strcmp(check_protocol, "http://") == 0) {
+    is_valid_protocol = TRUE;
+    protocol = HTTP_PORT;
+  }
+  else if(strcmp(check_protocol, "https:/") == 0) {
+    is_valid_protocol = TRUE;
+    protocol = HTTPS_PORT;
+  }
+
+  if(!is_valid_protocol) {
+    puts("Error: unknown protocol\n");
     return -1;
+  }
 
   char *hostname = INIT_ARRAY(char, size);
 
   int init_value = 7;
-  if(is_valid_protocol == HTTPS_PORT)
+  if(protocol == HTTPS_PORT)
     init_value = 8;
 
   ssize_t pos = 0;
@@ -504,6 +512,12 @@ int get_http_response(const char *url, const char *user_agent, response_s *respo
 
   url_data_s *url_data = (url_data_s*)malloc(sizeof(url_data_s));
   int err = set_url_data(url, strlen(url), GET, url_data);
+  if(err == -1) {
+    FREE(url_data);
+    puts("Error: failed set_url_data in get_http_response\n");
+    return -1;
+  }
+  
   printf("hostname: %s\n", url_data->hostname);
   printf("pathname: %s\n", url_data->path_name);
   
@@ -547,8 +561,11 @@ int get_http_response(const char *url, const char *user_agent, response_s *respo
     /*   return -1; */
     /* } */
 
+    int protocol = HTTPS_PORT;
+    if(url_data->protocol == HTTP_PORT)
+      protocol = HTTP_PORT;
     
-    err = do_connect(&socket_data, HTTPS_PORT, TRUE, header, response);
+    err = do_connect(&socket_data, protocol, TRUE, header, response);
     if(!err) {
       printf("Error: do_conenct\n");
 
