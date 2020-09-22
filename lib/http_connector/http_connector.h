@@ -21,7 +21,7 @@
 #define HTTP_PORT 80
 #define HTTPS_PORT 443
 
-#define BUF_SIZE 4096
+#define BUF_SIZE 10485760 // 10.48576MB
 
 #define MAX_HTTP_HEADER_SIZE 16384
 
