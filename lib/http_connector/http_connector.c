@@ -469,12 +469,22 @@ char* create_header(url_data_s *url_data, const char *user_agent, Method method,
   ssize_t size = strlen(method_string) +
     url_data->path_name_size +
     strlen(http_version_string) +
-    strlen(host_prefix) +
-    url_data->hostname_size +
-    (strlen(header_end_line) * 4) + 2;
+    (strlen(header_end_line) * 2) + // first and end line length
+    2;
 
   if(user_agent != NULL)
-    size += strlen(user_agent) + strlen(user_agent_prefix);
+    size += strlen(user_agent) + strlen(user_agent_prefix) + strlen(header_end_line);
+
+  if(url_data->hostname != NULL)
+    size += strlen(host_prefix) + url_data->hostname_size + strlen(header_end_line);
+  else {
+    printf("Error: hostname is empty!\n");
+
+    FREE(method_string);
+    FREE(http_version_string);
+    
+    return NULL;
+  }
   
   char *header = INIT_ARRAY(char, size);
   if(user_agent != NULL)
