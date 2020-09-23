@@ -351,6 +351,10 @@ int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char 
 
 int set_url_data(const char *url, int size, Method method, url_data_s *url_data)
 {
+  if(size < 7) {
+    puts("Error: invalid url. Please least length 7 or higher.");
+    return -1;
+  }
 
   char check_protocol[7];
   
