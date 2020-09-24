@@ -57,3 +57,5 @@ peda-session-sample.txt
 .gdb_history
 
 test_run.sh
+
+build

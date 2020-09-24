@@ -2,10 +2,10 @@
 
 echo "build start"
 
-cd ./lib/http_connector
+cd ./src/lib/http_connector
 make
 
-cd ../../
+cd ../
 make
 
 echo "done! (^ω^)⊃🍺"
