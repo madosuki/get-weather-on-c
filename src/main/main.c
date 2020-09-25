@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "openweather.h"
+#include "../lib/openweathermap_client/openweather.h"
 
 
 int main(int argc, const char **argv)

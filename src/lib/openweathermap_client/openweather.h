@@ -3,7 +3,7 @@
 
 #include <json-c/json.h>
 
-#include "../lib/http_connector/http_connector.h"
+#include "../http_connector/http_connector.h"
 
 typedef struct OpenWeatherMapCoordStruct {
   float logitude;
