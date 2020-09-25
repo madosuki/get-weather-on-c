@@ -524,9 +524,9 @@ int get_http_response(const char *url, const char *user_agent, response_s *respo
   
   printf("hostname: %s\n", url_data->hostname);
   printf("pathname: %s\n", url_data->path_name);
-  
-  if(url_data->body != NULL)
-    printf("body: %s\n", url_data->body);
+
+  /* if(url_data->body != NULL) */
+  /*   printf("body: %s\n", url_data->body); */
 
   if(err) {
     char *header = create_header(url_data, user_agent, GET, HTTP_1_1);
