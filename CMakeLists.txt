@@ -19,3 +19,4 @@ add_executable(sample ./src/main/main.c)
 
 target_link_libraries(sample http_connector)
 target_link_libraries(sample openweathermap_client)
+# target_link_libraries(sample ${JSONC_LIBRARIES})
