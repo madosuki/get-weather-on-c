@@ -14,7 +14,7 @@ int main(int argc, const char **argv)
 {
   if(argc < 2) {
 
-    printf("non argument. this program need one argument of url string\n");
+    printf("non argument. This program need one argument which named City Name in OpenWeatherMap API.\n");
     
     return -1;
   }
