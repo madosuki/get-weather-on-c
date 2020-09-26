@@ -349,9 +349,9 @@ int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char 
   return 1;
 }
 
-int set_url_data(const char *url, int size, Method method, url_data_s *url_data)
+int set_url_data(const char *url, ssize_t url_size, const char *data, ssize_t data_size, Method method, url_data_s *url_data)
 {
-  if(size < 7) {
+  if(url_size < 7) {
     puts("Error: invalid url. Please least length 7 or higher.");
     return -1;
   }
@@ -379,14 +379,14 @@ int set_url_data(const char *url, int size, Method method, url_data_s *url_data)
     return -1;
   }
 
-  char *hostname = INIT_ARRAY(char, size);
+  char *hostname = INIT_ARRAY(char, url_size);
 
   int init_value = 7;
   if(protocol == HTTPS_PORT)
     init_value = 8;
 
   ssize_t pos = 0;
-  for(ssize_t i = (ssize_t)init_value; i < size; ++i) {
+  for(ssize_t i = (ssize_t)init_value; i < url_size; ++i) {
     if(url[i] == '/')
       break;
 
@@ -395,36 +395,26 @@ int set_url_data(const char *url, int size, Method method, url_data_s *url_data)
   }
 
   ssize_t path_pos = 0;
-  char *path = INIT_ARRAY(char, size);
+  char *path = INIT_ARRAY(char, url_size);
   /* int is_get_query = FALSE; */
   /* ssize_t get_query_pos = 0; */
-  for(ssize_t i = pos + init_value; i < size; ++i) {
-    /* if(url[i] == '?' && method == GET) { */
-    /*   is_get_query = TRUE; */
-    /*   get_query_pos = i + 1; */
-    /*   break; */
-    /* } */
-    
+  for(ssize_t i = pos + init_value; i < url_size; ++i) {
     path[path_pos] = url[i];
     ++path_pos;
   }
+  
   if(path_pos == 0) {
     ++path_pos;
     path[0] = '/';
   }
 
   char *body = NULL;
-  int body_count = 0;
   url_data->body = NULL;
-  /* if(is_get_query) { */
-  /*   body = INIT_ARRAY(char, size); */
+  if(method == POST && data != NULL) {
+    body = INIT_ARRAY(char, data_size);
 
-  /*   for(ssize_t i = get_query_pos; i < size; ++i) { */
-  /*     body[body_count] = url[i]; */
-  /*     ++body_count; */
-  /*   } */
-    
-  /* } */
+    strncpy(body, data, data_size);
+  }
 
 
   url_data->hostname = hostname;
@@ -435,12 +425,12 @@ int set_url_data(const char *url, int size, Method method, url_data_s *url_data)
 
   if(body != NULL) {
     url_data->body = body;
-    url_data->body_size = body_count + 1;
+    url_data->body_size = data_size;
   }
   
-  url_data->url = INIT_ARRAY(char, size);
-  url_data->url_size = size;
-  strncpy(url_data->url, url, size);
+  url_data->url = INIT_ARRAY(char, url_size);
+  url_data->url_size = url_size;
+  strncpy(url_data->url, url, url_size);
 
 
   return 1;
@@ -516,7 +506,7 @@ int get_http_response(const char *url, const char *user_agent, response_s *respo
 {
 
   url_data_s *url_data = (url_data_s*)malloc(sizeof(url_data_s));
-  int err = set_url_data(url, strlen(url), GET, url_data);
+  int err = set_url_data(url, strlen(url), NULL, 0, GET, url_data);
   if(err == -1) {
     FREE(url_data);
     puts("Error: failed set_url_data in get_http_response\n");

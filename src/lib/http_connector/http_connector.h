@@ -85,7 +85,7 @@ void set_addr(socket_data_s *socket_data, const url_data_s *url_data);
 
 int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char *data, response_s *response);
 
-int set_url_data(const char *url, int size, Method method, url_data_s *url_data);
+int set_url_data(const char *url, ssize_t url_size, const char *data, ssize_t data_size, Method method, url_data_s *url_data);
 
 char* create_header(url_data_s *url_data, const char* user_agent, Method method, HttpVersion version);
 
