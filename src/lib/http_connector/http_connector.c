@@ -415,6 +415,7 @@ int set_url_data(const char *url, int size, Method method, url_data_s *url_data)
 
   char *body = NULL;
   int body_count = 0;
+  url_data->body = NULL;
   /* if(is_get_query) { */
   /*   body = INIT_ARRAY(char, size); */
 
@@ -525,8 +526,8 @@ int get_http_response(const char *url, const char *user_agent, response_s *respo
   printf("hostname: %s\n", url_data->hostname);
   printf("pathname: %s\n", url_data->path_name);
 
-  /* if(url_data->body != NULL) */
-  /*   printf("body: %s\n", url_data->body); */
+  if(url_data->body != NULL)
+    printf("body: %s\n", url_data->body);
 
   if(err) {
     char *header = create_header(url_data, user_agent, GET, HTTP_1_1);

@@ -1,14 +1,5 @@
 #!/bin/sh
 
-
-# echo "build start"
-
-# cd ./src/lib/http_connector
-# make
-
-# cd ../
-# make
-
 if [ ! -d ./build ]; then
     mkdir -p build
 fi
@@ -16,6 +7,8 @@ fi
 cd build
 
 cmake ..
+
+echo "build start"
 
 cmake --build .
 
