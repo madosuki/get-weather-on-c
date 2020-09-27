@@ -6,7 +6,7 @@
 #include "../http_connector/http_connector.h"
 
 typedef struct OpenWeatherMapCoordStruct {
-  float logitude;
+  float longitude;
   float latitude;
 } openweather_coord_s;
 
@@ -87,5 +87,7 @@ typedef struct OpenWeatherMapQueryStruct {
 } openweather_query_s;
 
 openweather_map_current_s *get_openweather_map_current_data(const openweather_query_s *source);
+
+void FreeOpenWeatherMapWeather(openweather_weather_s *data);
 
 #endif

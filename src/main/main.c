@@ -89,6 +89,13 @@ int main(int argc, const char **argv)
   printf("api_key: %s\ncity name: %s\n", query.api_key, query.city_name);
 
   openweather_map_current_s *result = get_openweather_map_current_data(&query);
+  if(result->weather.main != NULL) {
+    printf("coord:\nlon: %f, lat: %f\n\nweather:\nid: %ld\nmain: %s\n", result->coord.longitude, result->coord.latitude, result->weather.id, result->weather.main);
+    FREE(result->weather.main);
+  }
+
+  FreeOpenWeatherMapWeather(&result->weather);
+  
   FREE(query.api_key);
   FREE(query.city_name);
   FREE(result);

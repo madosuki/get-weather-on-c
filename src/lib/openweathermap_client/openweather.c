@@ -1,5 +1,72 @@
 #include "openweather.h"
 
+int string_equal(const char *left, const char *right)
+{
+
+  if(strcmp(left, right) == 0) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+char *convert_json_string_to_c_string(struct json_object *obj)
+{
+  const char *tmp = json_object_to_json_string(obj);
+  if(tmp == NULL) {
+    return NULL;
+  }
+
+  ssize_t tmp_size = strlen(tmp) - 2;
+
+  char *result = INIT_ARRAY(char, tmp_size);
+  if(result == NULL) {
+    return NULL;
+  }
+
+  strncpy(result, tmp + 1, tmp_size);
+
+  return result;
+}
+
+void FreeOpenWeatherMapWeather(openweather_weather_s *data)
+{
+  if(data->main != NULL)
+    FREE(data->main);
+
+  if(data->descripiton != NULL)
+    FREE(data->descripiton);
+
+  if(data->icon != NULL)
+    FREE(data->icon);
+
+  data->id = 0;
+  
+}
+
+void set_openweather_weather(struct json_object *obj, openweather_weather_s *weather)
+{
+  json_object_object_foreach(obj, key, val) {
+    if(string_equal(key, "id")) {
+      long id = json_object_get_int64(val);
+      weather->id = id;
+    }
+
+    if(string_equal(key, "main")) {
+      weather->main = convert_json_string_to_c_string(val);
+    }
+
+    if(string_equal(key, "description")) {
+      weather->descripiton = convert_json_string_to_c_string(val);
+    }
+
+    if(string_equal(key, "icon")) {
+      weather->icon = convert_json_string_to_c_string(val);
+    }
+    
+  }
+}
+
 openweather_map_current_s *get_openweather_map_current_data(const openweather_query_s *source)
 {
   const char *base = "https://api.openweathermap.org/data/2.5/weather?";
@@ -54,7 +121,6 @@ openweather_map_current_s *get_openweather_map_current_data(const openweather_qu
 
   openweather_map_current_s *data = (openweather_map_current_s*)malloc(sizeof(openweather_map_current_s));
 
-  puts("json:");
   json_object_object_foreach(json_from_string, key, val) {
     if(strcmp(key, "coord") == 0) {
 
@@ -66,7 +132,7 @@ openweather_map_current_s *get_openweather_map_current_data(const openweather_qu
         if(strcmp(k, "lon") == 0) {
           const char *lon = json_object_to_json_string(v);
           char **endpoint = NULL;
-          coord.logitude = strtof(lon, endpoint);
+          coord.longitude = strtof(lon, endpoint);
         }
 
         if(strcmp(k, "lat") == 0) {
@@ -79,9 +145,34 @@ openweather_map_current_s *get_openweather_map_current_data(const openweather_qu
 
       data->coord = coord;
       
-    } else {
-      printf("%s: %s\n", key, json_object_to_json_string(val));
     }
+
+    if(strcmp(key, "weather") == 0) {
+
+      openweather_weather_s weather = {};
+
+      if(json_object_get_type(val) == json_type_array) {
+        json_object *obj = json_object_array_get_idx(val, 0);
+        
+        set_openweather_weather(obj, &weather);
+        
+      } else {
+        
+        set_openweather_weather(val, &weather);
+        
+      }
+
+
+      data->weather = weather;
+    }
+
+    if(string_equal(key, "base")) {
+
+      data->base = convert_json_string_to_c_string(val);
+      
+    }
+
+
   }
 
 
