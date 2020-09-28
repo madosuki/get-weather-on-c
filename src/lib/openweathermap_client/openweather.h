@@ -54,16 +54,17 @@ typedef struct OpenWeatherMapSysStruct {
 } openweather_sys_s;
 
 typedef struct OpenWeatherMapCurrent {
-  openweather_coord_s coord;
-  openweather_weather_s weather;
+  openweather_coord_s *coord;
+  openweather_weather_s *weather;
   char *base;
-  openweather_main_s main;
+  openweather_main_s *main;
   long long visibility;
+  openweather_wind_s *wind;
   int clouds;
-  openweather_rain_s rain;
-  openweather_snow_s snow;
+  openweather_rain_s *rain;
+  openweather_snow_s *snow;
   long long dt;
-  openweather_sys_s sys;
+  openweather_sys_s *sys;
   long long timezone;
   long long id;
   char *name;
@@ -88,6 +89,6 @@ typedef struct OpenWeatherMapQueryStruct {
 
 openweather_map_current_s *get_openweather_map_current_data(const openweather_query_s *source);
 
-void FreeOpenWeatherMapWeather(openweather_weather_s *data);
+void FreeOpenWeatherCurrent(openweather_map_current_s *data);
 
 #endif
