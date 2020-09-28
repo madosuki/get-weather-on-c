@@ -6,8 +6,8 @@
 #include "../http_connector/http_connector.h"
 
 typedef struct OpenWeatherMapCoordStruct {
-  float longitude;
-  float latitude;
+  double longitude;
+  double latitude;
 } openweather_coord_s;
 
 typedef struct OpenWeatherMapWeatherStruct {
@@ -18,10 +18,10 @@ typedef struct OpenWeatherMapWeatherStruct {
 } openweather_weather_s;
 
 typedef struct OpenWeatherMapMainStruct {
-  float temp;
-  float feels_like;
-  float temp_min;
-  float temp_max;
+  double temp;
+  double feels_like;
+  double temp_min;
+  double temp_max;
   long pressure;
   int humidity;
   int sea_level;
@@ -29,7 +29,7 @@ typedef struct OpenWeatherMapMainStruct {
 } openweather_main_s;
 
 typedef struct OpenWeatherMapWindStruct {
-  float speed;
+  double speed;
   int deg;
   int gust;
 } openweather_wind_s;
@@ -47,7 +47,7 @@ typedef struct OpenWeatherMapSnowStruct {
 typedef struct OpenWeatherMapSysStruct {
   int type;
   int id;
-  float message;
+  double message;
   char *country;
   long long sunrise;
   long long sunset;
@@ -58,7 +58,7 @@ typedef struct OpenWeatherMapCurrent {
   openweather_weather_s weather;
   char *base;
   openweather_main_s main;
-  long visibility;
+  long long visibility;
   int clouds;
   openweather_rain_s rain;
   openweather_snow_s snow;

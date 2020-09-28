@@ -48,7 +48,7 @@ void set_openweather_weather(struct json_object *obj, openweather_weather_s *wea
 {
   json_object_object_foreach(obj, key, val) {
     if(string_equal(key, "id")) {
-      long id = json_object_get_int64(val);
+      int id = json_object_get_int(val);
       weather->id = id;
     }
 
@@ -65,6 +65,37 @@ void set_openweather_weather(struct json_object *obj, openweather_weather_s *wea
     }
     
   }
+}
+
+void set_openweather_main(struct json_object *obj, openweather_main_s *main)
+{
+  json_object_object_foreach(obj, key, val) {
+    if(string_equal(key, "temp")) {
+      main->temp = json_object_get_double(val);
+    }
+
+    if(string_equal(key, "feels_like")) {
+      main->feels_like = json_object_get_double(val);
+    }
+
+
+    if(string_equal(key, "temp_min")) {
+      main->temp_min = json_object_get_double(val);
+    }
+
+    if(string_equal(key, "temp_max")) {
+      main->temp_max = json_object_get_double(val);
+    }
+
+    if(string_equal(key, "pressure")) {
+      main->pressure = json_object_get_int(val);
+    }
+
+    if(string_equal(key, "humidity")) {
+      main->humidity = json_object_get_int(val);
+    }
+  }
+  
 }
 
 openweather_map_current_s *get_openweather_map_current_data(const openweather_query_s *source)
@@ -127,18 +158,13 @@ openweather_map_current_s *get_openweather_map_current_data(const openweather_qu
       openweather_coord_s coord = {};
       
       json_object_object_foreach(val, k, v) {
-        // printf("%s: %s\n", k , json_object_to_json_string(v));
 
         if(strcmp(k, "lon") == 0) {
-          const char *lon = json_object_to_json_string(v);
-          char **endpoint = NULL;
-          coord.longitude = strtof(lon, endpoint);
+          coord.longitude = json_object_get_double(v);
         }
 
         if(strcmp(k, "lat") == 0) {
-          const char *lat = json_object_to_json_string(v);
-          char **endpoint = NULL;
-          coord.latitude = strtof(lat, endpoint);
+          coord.latitude = json_object_get_double(v);
         }
         
       }
@@ -167,9 +193,14 @@ openweather_map_current_s *get_openweather_map_current_data(const openweather_qu
     }
 
     if(string_equal(key, "base")) {
-
       data->base = convert_json_string_to_c_string(val);
-      
+    }
+
+    if(string_equal(key, "main")) {
+      openweather_main_s main_s = {};
+      set_openweather_main(val, &main_s);
+
+      data->main = main_s;
     }
 
 
