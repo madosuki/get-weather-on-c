@@ -221,7 +221,7 @@ openweather_map_current_s *get_openweather_map_current_data(const openweather_qu
   strncat(url, appid_prefix, appid_prefix_size);
   strncat(url, source->api_key, strlen(source->api_key));
 
-  response_s *response = INIT_ARRAY(response_s, sizeof(response_s));
+  response_s *response = (response_s*)malloc(sizeof(response_s));
   int err = get_http_response(url, user_agent, response);
 
   FREE(url);
