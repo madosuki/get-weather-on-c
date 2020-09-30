@@ -47,8 +47,9 @@ int main(int argc, const char **argv)
   
   const char *setting_file_name = "openweather_map_account.json";
   ssize_t setting_file_name_size = strlen(setting_file_name);
-  
-  char *setting_file_dir_path = INIT_ARRAY(char, home_directory_path_size + setting_file_dir_path_parts_size);
+
+  ssize_t setting_file_dir_path_size = home_directory_path_size + setting_file_dir_path_parts_size;
+  char *setting_file_dir_path = INIT_ARRAY(char, setting_file_dir_path_size + 1);
   strncpy(setting_file_dir_path, home_directory, home_directory_path_size);
   strncat(setting_file_dir_path, setting_file_dir_path_parts, setting_file_dir_path_parts_size);
 
@@ -64,9 +65,10 @@ int main(int argc, const char **argv)
   }
   #endif
 
-  char *setting_file_path = INIT_ARRAY(char, home_directory_path_size +
-                                      setting_file_dir_path_parts_size +
-                                      setting_file_name_size);
+  ssize_t setting_file_path_size = home_directory_path_size +
+    setting_file_dir_path_parts_size +
+    setting_file_name_size;
+  char *setting_file_path = INIT_ARRAY(char, setting_file_path_size + 1);
 
   strncpy(setting_file_path,
           setting_file_dir_path, home_directory_path_size + setting_file_dir_path_parts_size);
@@ -105,12 +107,14 @@ int main(int argc, const char **argv)
   ssize_t api_key_size = strlen(api_key);
 
   openweather_query_s query = {};
-  query.api_key = INIT_ARRAY(char, api_key_size);
+  query.api_key = INIT_ARRAY(char, api_key_size + 1);
   strncpy(query.api_key, api_key + 1, api_key_size - 2);
+  query.api_key[api_key_size] = '\0';
 
   ssize_t city_name_size = strlen(argv[1]);
-  query.city_name = INIT_ARRAY(char, city_name_size);
+  query.city_name = INIT_ARRAY(char, city_name_size + 1);
   strncpy(query.city_name, argv[1], city_name_size);
+  query.city_name[city_name_size] = '\0';
 
   printf("api_key: %s\ncity name: %s\n", query.api_key, query.city_name);
 
