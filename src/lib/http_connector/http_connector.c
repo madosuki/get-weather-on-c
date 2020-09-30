@@ -13,7 +13,7 @@ int set_http_response_data(const char *response_data, ssize_t size, response_s *
     return -1;
   }
 
-  char *header = INIT_ARRAY(char, size);
+  char *header = INIT_ARRAY(char, size + 1);
   ssize_t count = 0;
   int new_line_count = 0;
   char previous = 0;
@@ -75,8 +75,9 @@ int set_http_response_data(const char *response_data, ssize_t size, response_s *
 
     return -1;
   }
+  header[count] = '\0';
 
-  char *reallocated = realloc(header, count);
+  char *reallocated = realloc(header, count + 1);
   if(reallocated == NULL) {
     FREE(header);
 
@@ -87,14 +88,15 @@ int set_http_response_data(const char *response_data, ssize_t size, response_s *
 
   header = reallocated;
 
-  char *body = INIT_ARRAY(char, size);
+  char *body = INIT_ARRAY(char, size + 1);
   ssize_t body_pos = 0;
   for(ssize_t i = count; i < size; ++i) {
     body[body_pos] = response_data[i];
     ++body_pos;
   }
+  body[body_pos] = '\0';
 
-  result->body_size = body_pos;
+  result->body_size = body_pos + 1;
   result->body = body;
 
   result->raw_header_size = count;
@@ -392,7 +394,7 @@ int set_url_data(const char *url, ssize_t url_size, const char *data, ssize_t da
     return -1;
   }
 
-  char *hostname = INIT_ARRAY(char, url_size);
+  char *hostname = INIT_ARRAY(char, url_size + 1);
 
   int init_value = 7;
   if(protocol == HTTPS_PORT)
@@ -406,9 +408,10 @@ int set_url_data(const char *url, ssize_t url_size, const char *data, ssize_t da
     hostname[pos] = url[i];
     ++pos;
   }
+  hostname[pos] = '\0';
 
   ssize_t path_pos = 0;
-  char *path = INIT_ARRAY(char, url_size);
+  char *path = INIT_ARRAY(char, url_size + 1);
   /* int is_get_query = 0; */
   /* ssize_t get_query_pos = 0; */
   for(ssize_t i = pos + init_value; i < url_size; ++i) {
@@ -419,14 +422,17 @@ int set_url_data(const char *url, ssize_t url_size, const char *data, ssize_t da
   if(path_pos == 0) {
     ++path_pos;
     path[0] = '/';
+  } else {
+    path[path_pos] = '\0';
   }
 
   char *body = NULL;
   url_data->body = NULL;
   if(method == POST && data != NULL) {
-    body = INIT_ARRAY(char, data_size);
+    body = INIT_ARRAY(char, data_size + 1);
 
     strncpy(body, data, data_size);
+    body[data_size] = '\0';
   }
 
 
@@ -502,7 +508,7 @@ char* create_header(url_data_s *url_data, const char *user_agent, Method method,
     return NULL;
   }
   
-  char *header = INIT_ARRAY(char, size);
+  char *header = INIT_ARRAY(char, size + 1);
   if(user_agent != NULL)
     sprintf(header, "%s %s %s\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n", method_string, url_data->path_name, http_version_string, url_data->hostname, user_agent);
   else
