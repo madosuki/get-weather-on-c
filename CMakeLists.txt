@@ -10,6 +10,9 @@ include_directories(${JSONC_INCLUDE_DIRS})
 
 add_library(http_connector ./src/lib/http_connector/http_connector.c)
 target_link_libraries(http_connector OpenSSL::SSL)
+if(MINGW)
+  target_link_libraries(http_connector wsock32 ws2_32)
+endif(MINGW)
 
 add_library(openweathermap_client ./src/lib/openweathermap_client/openweather.c)
 target_link_libraries(openweathermap_client http_connector)

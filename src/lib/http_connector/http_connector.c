@@ -215,8 +215,15 @@ int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char 
   long readed_size = 0;
 
   int err;
-  
+
   connect(socket_data->socket, (struct sockaddr *)&socket_data->target, sizeof(socket_data->target));
+
+  /* #ifdef _WIN32
+  /* bind(socket_data->socket, (struct sockaddr *)&socket_data->target, sizeof(socket_data->target)); */
+  /* listen(socket_data->socket, 5); */
+  /* #else */
+  /* connect(socket_data->socket, (struct sockaddr *)&socket_data->target, sizeof(socket_data->target)); */
+  /* #endif */
 
   SSL_CTX *ctx = NULL;
   SSL *ssl = NULL;
@@ -361,11 +368,12 @@ int set_url_data(const char *url, ssize_t url_size, const char *data, ssize_t da
     return -1;
   }
 
-  char check_protocol[7];
+  char check_protocol[8];
   
   for(int i = 0; i < 7; ++i) {
     check_protocol[i] = url[i];
   }
+  check_protocol[7] = '\0';
 
   int is_valid_protocol = 0;
   int protocol = 0;
@@ -583,9 +591,6 @@ int get_http_response(const char *url, const char *user_agent, response_s *respo
 
       return -1;
     }
-
-    /* memcpy(result, response, sizeof(response_s)); */
-    /* FREE(response); */
 
 
     FREE(header);
