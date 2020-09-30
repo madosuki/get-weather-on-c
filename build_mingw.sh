@@ -1,10 +1,10 @@
 #!/bin/sh
 
-if [ ! -d ./build_linux ]; then
-    mkdir -p build_linux
+if [ ! -d ./build_mingw ]; then
+    mkdir -p build_mingw
 fi
 
-cd build_linux
+cd build_mingw
 
 cmake ..
 

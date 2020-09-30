@@ -59,5 +59,7 @@ peda-session-sample.txt
 test_run.sh
 
 build
+build_linux
+build_mingw
 
 openweather_map_account.json

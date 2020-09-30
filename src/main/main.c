@@ -3,6 +3,10 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
+
+#ifdef _WIN32
+#include <direct.h>
+#endif
 #include <sys/stat.h>
 
 #include <json-c/json.h>
@@ -19,24 +23,46 @@ int main(int argc, const char **argv)
     return -1;
   }
 
+  #ifdef _WIN32
+  struct _stat stat_data;
+  #else
   struct stat stat_data;
+  #endif
 
-  ssize_t home_directory_path_size = strlen(getenv("HOME"));
+
+  #ifdef _WIN32
+  char *home_directory = getenv("USER");
+  #else
+  char *home_directory = getenv("HOME");
+  #endif
+  
+  ssize_t home_directory_path_size = strlen(home_directory);
+  #ifdef _WIN32
+  const char *setting_file_dir_path_parts = "\\.openweather_map_client\\";
+  #else
   const char *setting_file_dir_path_parts = "/.config/openweather_map_client/";
+  #endif
+  
   ssize_t setting_file_dir_path_parts_size = strlen(setting_file_dir_path_parts);
   
   const char *setting_file_name = "openweather_map_account.json";
   ssize_t setting_file_name_size = strlen(setting_file_name);
   
   char *setting_file_dir_path = INIT_ARRAY(char, home_directory_path_size + setting_file_dir_path_parts_size);
-  strncpy(setting_file_dir_path, getenv("HOME"), home_directory_path_size);
+  strncpy(setting_file_dir_path, home_directory, home_directory_path_size);
   strncat(setting_file_dir_path, setting_file_dir_path_parts, setting_file_dir_path_parts_size);
 
   printf("%s\n", setting_file_dir_path);
- 
+
+  #ifdef _WIN32
+  if(_stat(setting_file_dir_path, &stat_data) != 0) {
+    _mkdir(setting_file_dir_path);
+  }
+  #else
   if(stat(setting_file_dir_path, &stat_data) == -1) {
     mkdir(setting_file_dir_path, 0755);
   }
+  #endif
 
   char *setting_file_path = INIT_ARRAY(char, home_directory_path_size +
                                       setting_file_dir_path_parts_size +

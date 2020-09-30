@@ -1,7 +1,5 @@
 #include "./http_connector.h"
 
-const int FALSE = 0;
-const int TRUE = 1;
 
 int set_http_response_data(const char *response_data, ssize_t size, response_s *result)
 {
@@ -163,8 +161,11 @@ int resolve_hostname(const char* hostname, char **ip_list)
 
 void init_socket(socket_data_s *socket_data)
 {
-
-  int sock = socket(AF_INET, SOCK_STREAM, 0);  
+  #ifdef _WIN32
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+  #else
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+  #endif
 
   struct sockaddr_in target;
   target.sin_family = AF_INET;
@@ -214,7 +215,7 @@ int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char 
   long readed_size = 0;
 
   int err;
-
+  
   connect(socket_data->socket, (struct sockaddr *)&socket_data->target, sizeof(socket_data->target));
 
   SSL_CTX *ctx = NULL;
@@ -262,7 +263,7 @@ int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char 
   }
 
   if(!is_ssl)
-    err = write(socket_data->socket, data, strlen(data));
+    err = send(socket_data->socket, data, strlen(data), 0);
   else
     err = SSL_write(ssl, data, strlen(data));
 
@@ -322,7 +323,11 @@ int do_connect(socket_data_s *socket_data, int protocol, int is_ssl, const char 
     ERR_free_strings();
   }
 
-  close(socket_data->socket);
+  #ifdef _WIN32
+    closesocket(socket_data->socket);
+  #else
+    close(socket_data->socket);
+  #endif
 
   FREE(buf);
 
@@ -362,15 +367,15 @@ int set_url_data(const char *url, ssize_t url_size, const char *data, ssize_t da
     check_protocol[i] = url[i];
   }
 
-  int is_valid_protocol = FALSE;
+  int is_valid_protocol = 0;
   int protocol = 0;
 
   if(strcmp(check_protocol, "http://") == 0) {
-    is_valid_protocol = TRUE;
+    is_valid_protocol = 1;
     protocol = HTTP_PORT;
   }
   else if(strcmp(check_protocol, "https:/") == 0) {
-    is_valid_protocol = TRUE;
+    is_valid_protocol = 1;
     protocol = HTTPS_PORT;
   }
 
@@ -396,7 +401,7 @@ int set_url_data(const char *url, ssize_t url_size, const char *data, ssize_t da
 
   ssize_t path_pos = 0;
   char *path = INIT_ARRAY(char, url_size);
-  /* int is_get_query = FALSE; */
+  /* int is_get_query = 0; */
   /* ssize_t get_query_pos = 0; */
   for(ssize_t i = pos + init_value; i < url_size; ++i) {
     path[path_pos] = url[i];
@@ -538,6 +543,11 @@ int get_http_response(const char *url, const char *user_agent, response_s *respo
 
     socket_data_s socket_data;
 
+    #ifdef _WIN32
+    WSADATA wsaData;
+    int wsa_error = WSAStartup(MAKEWORD(2, 0), &wsaData);
+    #endif
+
     init_socket(&socket_data);
 
     set_addr(&socket_data, url_data);
@@ -560,7 +570,7 @@ int get_http_response(const char *url, const char *user_agent, response_s *respo
     if(url_data->protocol == HTTP_PORT)
       protocol = HTTP_PORT;
     
-    err = do_connect(&socket_data, protocol, TRUE, header, response);
+    err = do_connect(&socket_data, protocol, 1, header, response);
     if(!err) {
       printf("Error: do_conenct\n");
 
@@ -586,6 +596,10 @@ int get_http_response(const char *url, const char *user_agent, response_s *respo
   }
 
   FREE(url_data);
+
+  #ifdef _WIN32
+    WSACleanup();
+  #endif
 
   return 1;
 }

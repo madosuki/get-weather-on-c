@@ -1,20 +1,26 @@
 #ifndef HTTP_CONNECTOR_H
 #define HTTP_CONNECTOR_H
 
-#include <openssl/ssl.h>
-#include <openssl/tls1.h>
-#include <sys/fcntl.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+#ifdef _WIN32
+  #include <winsock2.h>
+  #include <windows.h>
+#else
+  #include <sys/fcntl.h>
+  #include <sys/types.h>
+  #include <sys/socket.h>
+  #include <netinet/in.h>
+  #include <arpa/inet.h>
+  #include <netdb.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
 
+#include <openssl/ssl.h>
+#include <openssl/tls1.h>
 #include <openssl/err.h>
 #include <openssl/ssl3.h>
 
@@ -43,8 +49,17 @@ typedef enum {
 } HttpVersion;
 
 typedef struct SocketDataStruct {
-  int socket;
+
   struct sockaddr_in target;
+  
+  int os_type;
+
+  #ifdef _WIN32
+    SOCKET socket;
+  #else
+    int socket;
+  #endif
+
 } socket_data_s;
 
 typedef struct UrlDataStruct {
