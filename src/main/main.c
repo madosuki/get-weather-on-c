@@ -131,7 +131,11 @@ int main(int argc, const char **argv)
   }
   
   if(result->weather->main != NULL) {
-    printf("coord:\nlon: %f, lat: %f\n\nweather:\nid: %ld\nmain: %s\n", result->coord->longitude, result->coord->latitude, result->weather->id, result->weather->main);
+    printf("coord:\nlon: %f, lat: %f\n\nweather:\nid: %ld\nmain: %s\ndescription: %s\nicon: %s\n\nbase: %s\n\nmain:\ntemp: %f\nfeels like: %f\ntemp_min: %f\ntemp_max: %f\npressure: %ld\nhumidity: %d\n\n",
+           result->coord->longitude, result->coord->latitude,
+           result->weather->id, result->weather->main, result->weather->descripiton, result->weather->icon,
+           result->base,
+           result->main->temp, result->main->feels_like, result->main->temp_min, result->main->temp_max, result->main->pressure, result->main->humidity);
     printf("sys:\ncountry: %s\n", result->sys->country);
 
   }
