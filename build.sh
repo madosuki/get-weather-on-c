@@ -1,15 +1,17 @@
 #!/bin/sh
 
-git submodule update
+git submodule init && git submodule update
 
 if [ ! -d ./libopenweathermap_client ]; then
   echo "Error: git submodule with libopenweathermap_client"
   return
 fi
 
-cd libopenweathermap_client
+cd ./libopenweathermap_client
 
-git submodule update
+git checkout main
+
+git submodule init && git submodule update
 
 if [ ! -d ./libhttp_connector ]; then
   echo "Error: git submodule with libhttp_connector"
