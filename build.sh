@@ -1,5 +1,23 @@
 #!/bin/sh
 
+git submodule update
+
+if [ ! -d ./libopenweathermap_client ]; then
+  echo "Error: git submodule with libopenweathermap_client"
+  return
+fi
+
+cd libopenweathermap_client
+
+git submodule update
+
+if [ ! -d ./libhttp_connector ]; then
+  echo "Error: git submodule with libhttp_connector"
+  return
+fi
+
+cd ../
+
 if [ ! -d ./build_linux ]; then
     mkdir -p build_linux
 fi

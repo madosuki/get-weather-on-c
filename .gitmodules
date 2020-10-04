@@ -1,0 +1,3 @@
+[submodule "libopenweathermap_client"]
+	path = libopenweathermap_client
+	url = git@github.com:madosuki/libopenweathermap_client.git
