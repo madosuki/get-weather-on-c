@@ -20,7 +20,7 @@ project(get_openweather_data C)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/libopenweathermap_client)
 
-add_executable(sample ./src/main/main.c)
+add_executable(sample ./src/main.c)
 
 target_link_libraries(sample http_connector)
 target_link_libraries(sample openweathermap_client)

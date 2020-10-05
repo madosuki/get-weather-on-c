@@ -11,7 +11,7 @@
 
 #include <json-c/json.h>
 
-#include "../../libopenweathermap_client/src/openweather.h"
+#include "../libopenweathermap_client/src/openweather.h"
 
 
 int main(int argc, const char **argv)
