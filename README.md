@@ -18,7 +18,7 @@ config file directory: ${HOME}/..openweather_map_client
 config file name: "config file directory"/openweather_map_account.json  
 
 your api key set to openweather_map_account.json. Do reference to sample file in repository root.
-And this software not collect api key.
+And this software not collect api key and other data.
 
 then build  
 then can do run
