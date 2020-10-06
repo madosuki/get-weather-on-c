@@ -4,11 +4,7 @@ This software is just get current data of openweathermap with json.
 
 # Build
 ```
-git submodule init && git submodule update
-```
-then
-```
-mkdir -p build && cd build && cmake .. && cmake --build .
+bash ./build.sh
 ```
 
 # Dependents
