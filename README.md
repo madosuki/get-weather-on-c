@@ -13,7 +13,7 @@ bash ./build.sh
 
 # Usage
 
-config file directory: ${HOME}/..openweather_map_client  
+config file directory: ${HOME}/.openweather_map_client  
 
 config file name: "config file directory"/openweather_map_account.json  
 
